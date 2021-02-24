@@ -462,26 +462,48 @@ static NSString *const NO_WAITING_TIME = @"You need to set waiting time for ATT"
 -(void) handleCallback:(NSDictionary *) message{
     NSError *error;
 
-    NSData *jsonMessage = [NSJSONSerialization dataWithJSONObject:message
+	@try {
+        NSData *jsonMessage = [NSJSONSerialization dataWithJSONObject:message
                                                           options:0
                                                             error:&error];
-    if (jsonMessage) {
-        NSString *jsonMessageStr = [[NSString alloc] initWithBytes:[jsonMessage bytes] length:[jsonMessage length] encoding:NSUTF8StringEncoding];
+        if (jsonMessage) {
+            NSString *jsonMessageStr = [[NSString alloc] initWithBytes:[jsonMessage bytes] length:[jsonMessage length] encoding:NSUTF8StringEncoding];
 
-        NSString* status = (NSString*)[message objectForKey: @"status"];
-        NSString* type = (NSString*)[message objectForKey: @"type"];
+            NSString* status = (NSString*)[message objectForKey: @"status"];
+            NSString* type = (NSString*)[message objectForKey: @"type"];
 
-        if([status isEqualToString:afSuccess]){
-            [self reportOnSuccess:jsonMessageStr withType:type];
-        }
-        else{
-            [self reportOnFailure:jsonMessageStr withType:type];
-        }
+            if([status isEqualToString:afSuccess]){
+                [self reportOnSuccess:jsonMessageStr withType:type];
+            }
+            else{
+                [self reportOnFailure:jsonMessageStr withType:type];
+            }
 
-        NSLog(@"jsonMessageStr = %@",jsonMessageStr);
-    } else {
-        NSLog(@"%@",error);
-    }
+            NSLog(@"jsonMessageStr = %@",jsonMessageStr);
+		} else {
+			NSLog(@"%@",error);
+		}
+	}
+	@catch (NSException *exception) {
+		if(mAttributionDataListener != nil){
+			CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"handleCallback exception"];
+			[pluginResult setKeepCallback:[NSNumber numberWithBool:NO]];
+			[self.commandDelegate sendPluginResult:pluginResult callbackId:mAttributionDataListener];
+			mAttributionDataListener = nil;
+		}
+		if(mConversionListenerOnResume != nil){
+			CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"handleCallback exception"];
+			[pluginResult setKeepCallback:[NSNumber numberWithBool:NO]];
+			[self.commandDelegate sendPluginResult:pluginResult callbackId:mConversionListenerOnResume];
+			mConversionListenerOnResume = nil;
+		}
+		if(mConversionListener != nil){
+			CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"handleCallback exception"];
+			[pluginResult setKeepCallback:[NSNumber numberWithBool:NO]];
+			[self.commandDelegate sendPluginResult:pluginResult callbackId:mConversionListener];
+			mConversionListener = nil;
+		}
+	}
 }
 
 /**
