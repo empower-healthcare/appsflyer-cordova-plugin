@@ -58,6 +58,7 @@ public class AppsFlyerPlugin extends CordovaPlugin {
 	@Override
 	public boolean execute(final String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         Log.d("AppsFlyer", "Executing...");
+try{
 		if("setCurrencyCode".equals(action))
 		{
 			return setCurrencyCode(args);
@@ -112,6 +113,9 @@ public class AppsFlyerPlugin extends CordovaPlugin {
 		{
 			return onResume(args, callbackContext);
 		}
+}
+catch (Exception e){
+}
 
 		return false;
 	}
